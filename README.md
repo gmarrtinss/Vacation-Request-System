@@ -1,2 +1,2 @@
 # Vacation-Request-System
-Sistema web completo para solicitação e gerenciamento de férias entre colaboradores e gestor. Desenvolvido com Angular no front-end e Spring Boot no back-end, utilizando PostgreSQL como banco de dados e autenticação com JWT.
+A complete web-based system for requesting and managing vacations between employees and managers. Developed with Angular on the front end and Spring Boot on the back end, it uses PostgreSQL as the database and JWT authentication.
