@@ -86,8 +86,8 @@ public class EmployeeService {
         existingEmployee.setName(employeeDetails.getName());
         existingEmployee.setEmail(employeeDetails.getEmail());
         existingEmployee.setRole(employeeDetails.getRole());
-        // existingEmployee.setSector(employeeDetails.getSector());
-        // existingEmployee.setPosition(employeeDetails.getPosition());
+        existingEmployee.setSector(employeeDetails.getSector());
+        existingEmployee.setPosition(employeeDetails.getPosition());
         existingEmployee.setManager(employeeDetails.getManager());
         // A lógica de senha seria tratada em um método separado, ex: changePassword()
 

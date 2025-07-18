@@ -40,13 +40,13 @@ public class Employee {
     @Column(name = "admission_date", nullable = false)
     private LocalDate admissionDate;
 
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "sector_id")
-    // private Sector sector;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sector_id")
+    private Sector sector;
 
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "position_id")
-    // private Position position;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "position_id")
+    private Position position;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
