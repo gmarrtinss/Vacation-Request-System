@@ -1,51 +1,39 @@
-# docker-compose.yml
-
 version: '3.8'
 
 services:
-  # Serviço do Banco de Dados PostgreSQL
   postgres-db:
     image: postgres:15
     container_name: postgres-vacation
     environment:
-      POSTGRES_DB: vacationDB
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata-vacation:/var/lib/postgresql/data
-    # Conecta este serviço à nossa rede customizada
+    ports:
+      - "5432:5432"
     networks:
       - vacation-net
-    # Não precisamos mais da seção 'ports', pois o banco não precisa ser
-    # acessado de fora da rede Docker. O pgAdmin irá acessá-lo internamente.
     restart: always
 
-  # Serviço do pgAdmin
   pgadmin:
-    # Imagem oficial do pgAdmin 4
     image: dpage/pgadmin4
     container_name: pgadmin-vacation
     environment:
-      # Credenciais para o login inicial no pgAdmin
-      PGADMIN_DEFAULT_EMAIL: kaiker.maciel@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: vacationDB1234  # Troque por uma senha mais segura
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
-      # Expomos a porta 5050 na nossa máquina, que redireciona para a porta 80 do contêiner
       - "5050:80"
-    # Conecta o pgAdmin na mesma rede do banco de dados
     networks:
       - vacation-net
-    # Garante que o banco de dados seja iniciado ANTES do pgAdmin
     depends_on:
       - postgres-db
     restart: always
 
-# Declaração da nossa rede customizada
 networks:
   vacation-net:
     driver: bridge
 
-# Declaração do volume nomeado para persistência dos dados do postgres
 volumes:
   pgdata-vacation:
     driver: local
