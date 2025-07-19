@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "employees")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -52,12 +52,10 @@ public class Employee {
     @JoinColumn(name = "manager_id")
     private Employee manager;
 
-    // highlight-start
-    // --- MÉTODO DE VALIDAÇÃO CONDICIONAL ---
+   
 
     @AssertTrue(message = "A senha é obrigatória para a role 'GESTOR'")
     private boolean isPasswordValid() {
-        // Se a role não for MANAGER, a validação não se aplica e o método retorna verdadeiro.
         if (this.role != EmployeeRole.MANAGER) {
             return true;
         }
