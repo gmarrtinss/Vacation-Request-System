@@ -1,6 +1,6 @@
 package com.rh.vacationbackend.model;
 
-public enum EmployeeRole {
+public enum UsersRole {
     EMPLOYEE,
     MANAGER
 }

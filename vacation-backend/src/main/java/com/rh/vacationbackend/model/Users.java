@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Employee {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -35,7 +35,7 @@ public class Employee {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EmployeeRole role;
+    private UsersRole role;
 
     @Column(name = "admission_date", nullable = false)
     private LocalDate admissionDate;
@@ -50,7 +50,7 @@ public class Employee {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
-    private Employee manager;
+    private Users manager;
 
     // highlight-start
     // --- MÉTODO DE VALIDAÇÃO CONDICIONAL ---
@@ -58,7 +58,7 @@ public class Employee {
     @AssertTrue(message = "A senha é obrigatória para a role 'GESTOR'")
     private boolean isPasswordValid() {
         // Se a role não for MANAGER, a validação não se aplica e o método retorna verdadeiro.
-        if (this.role != EmployeeRole.MANAGER) {
+        if (this.role != UsersRole.MANAGER) {
             return true;
         }
         return this.password != null && !this.password.isBlank();
