@@ -52,7 +52,7 @@ public class Users {
     @JoinColumn(name = "manager_id")
     private Users manager;
 
-   
+
 
     @AssertTrue(message = "A senha é obrigatória para a role 'GESTOR'")
     private boolean isPasswordValid() {

@@ -1,62 +1,80 @@
-// Versão Corrigida do UsersController.java
-
 package com.rh.vacationbackend.controller;
 
+import com.rh.vacationbackend.dto.UsersCreateDTO;
+import com.rh.vacationbackend.dto.UsersResponseDTO;
+import com.rh.vacationbackend.dto.UsersUpdateDTO;
 import com.rh.vacationbackend.model.Users;
-import com.rh.vacationbackend.service.UsersService; // IMPORT CORRETO
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.rh.vacationbackend.service.UsersService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
 
-    // INJETE O SERVICE, NÃO O REPOSITORY
-    @Autowired
-    private UsersService usersService;
+    private final UsersService usersService;
 
-    // CREATE - Cria um novo usuario
+    public UsersController(UsersService usersService) {
+        this.usersService = usersService;
+    }
+
     @PostMapping
-    public ResponseEntity<Users> create(@RequestBody Users users) {
-        // CHAME O METODO DO SERVICE
-        Users saved = usersService.create(users);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<UsersResponseDTO> create(@RequestBody UsersCreateDTO dto) {
+        Users savedUser = usersService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(convertToDto(savedUser));
     }
 
-    // READ - Buscar todos os usuarios
     @GetMapping
-    public ResponseEntity<List<Users>> getAll() {
-        // CHAME O METODO DO SERVICE
+    public ResponseEntity<List<UsersResponseDTO>> getAll() {
         List<Users> list = usersService.findAll();
-        return ResponseEntity.ok(list);
+        List<UsersResponseDTO> dtoList = list.stream().map(this::convertToDto).collect(Collectors.toList());
+        return ResponseEntity.ok(dtoList);
     }
 
-    // READ - Buscar usuario por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Users> getById(@PathVariable UUID id) {
-        // O SERVICE JÁ TRATA O CASO DE "NÃO ENCONTRADO"
+    public ResponseEntity<UsersResponseDTO> getById(@PathVariable UUID id) {
         Users user = usersService.findById(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(convertToDto(user));
     }
 
-    // UPDATE - Atualizar usuario por ID
-    @PutMapping("/{id}")
-    public ResponseEntity<Users> update(@PathVariable UUID id, @RequestBody Users updatedData) {
-        // O SERVICE CONTÉM A LÓGICA DE UPDATE
-        Users saved = usersService.update(id, updatedData);
-        return ResponseEntity.ok(saved);
-    }
-
-    // DELETE - Excluir usuario por ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        // O SERVICE VERIFICA SE O USUÁRIO EXISTE ANTES DE DELETAR
+    public ResponseEntity<UsersResponseDTO> delete(@PathVariable UUID id) {
         usersService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsersResponseDTO> update(@PathVariable UUID id, @RequestBody UsersUpdateDTO dto) {
+        Users updatedUser = usersService.update(id, dto);
+        return ResponseEntity.ok(convertToDto(updatedUser));
+    }
+
+
+
+    // Dentro da classe UsersController
+
+    @GetMapping("/by-cpf/{cpf}")
+    public ResponseEntity<UsersResponseDTO> getByCpf(@PathVariable String cpf) {
+        // O service precisa de um método 'findByCpf' que retorne a entidade
+        Users user = usersService.findByCpf(cpf); // Supondo que você crie este método no service
+        return ResponseEntity.ok(convertToDto(user));
+    }
+
+    private UsersResponseDTO convertToDto(Users user) {
+        UUID managerId = (user.getManager() != null) ? user.getManager().getId() : null;
+        return new UsersResponseDTO(
+            user.getId(),
+            user.getCpf(),
+            user.getName(),
+            user.getEmail(),
+            user.getRole(),
+            user.getAdmissionDate(),
+            managerId
+        );
     }
 }

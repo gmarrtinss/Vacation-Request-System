@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.rh.vacationbackend.dto.VacationDateUpdateDTO;
 // DTOs que vamos criar a seguir
 import com.rh.vacationbackend.dto.VacationRequestCreateDTO;
 import com.rh.vacationbackend.dto.VacationRequestResponseDTO;
@@ -26,11 +27,16 @@ public class VacationRequestController {
 
     @PostMapping
     public ResponseEntity<VacationRequestResponseDTO> createRequest(@RequestBody VacationRequestCreateDTO createDTO) {
-        VacationRequest createdRequest = vacationRequestService.create(createDTO, createDTO.employeeId());
-        
+        VacationRequest createdRequest = vacationRequestService.create(createDTO, createDTO.userId()); // --- MUDANÇA AQUI ---
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDto(createdRequest));
     }
 
+    @GetMapping
+    public ResponseEntity<List<VacationRequestResponseDTO>> getAll() {
+        List<VacationRequest> list = vacationRequestService.findAll();
+        List<VacationRequestResponseDTO> dtoList = list.stream().map(this::convertToResponseDto).collect(Collectors.toList());
+        return ResponseEntity.ok(dtoList);
+    }
     
 
     @GetMapping("/{id}")
@@ -43,8 +49,8 @@ public class VacationRequestController {
     }
 
     @GetMapping("/employee/by-cpf/{cpf}")
-    public ResponseEntity<List<VacationRequestResponseDTO>> getRequestsByEmployeeCpf(@PathVariable String cpf) {
-        List<VacationRequest> requests = vacationRequestService.findRequestsByEmployeeCpf(cpf);
+    public ResponseEntity<List<VacationRequestResponseDTO>> getRequestsByUserCpf(@PathVariable String cpf) {
+        List<VacationRequest> requests = vacationRequestService.findRequestsByUserCpf(cpf);
 
         List<VacationRequestResponseDTO> responseDTOs = requests.stream()
                 .map(this::convertToResponseDto)
@@ -53,7 +59,7 @@ public class VacationRequestController {
         return ResponseEntity.ok(responseDTOs);
     }
 
-    @DeleteMapping("/{requestId}")
+    @DeleteMapping("/{requestId}/managerId")
     public ResponseEntity<Void> cancelRequest(
             @PathVariable UUID requestId,
             @RequestParam UUID managerId) {
@@ -63,11 +69,27 @@ public class VacationRequestController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Endpoint para um utilizador atualizar PARCIALMENTE (apenas as datas) de uma de suas solicitações.
+     */
+    @PatchMapping("/{requestId}/dates")
+    public ResponseEntity<VacationRequestResponseDTO> updateVacationDates(
+            @PathVariable UUID requestId,
+            @RequestBody VacationDateUpdateDTO dateDto,
+            @RequestParam UUID userId) {
+
+        VacationRequest updatedRequest = vacationRequestService.updateDates(requestId, userId, dateDto);
+        
+        return ResponseEntity.ok(convertToResponseDto(updatedRequest));
+    }
+
+
+
     private VacationRequestResponseDTO convertToResponseDto(VacationRequest request) {
         return new VacationRequestResponseDTO(
             request.getId(),
-            request.getEmployee().getId(),
-            request.getEmployee().getName(),
+            request.getUser().getId(),       // --- MUDANÇA AQUI ---
+            request.getUser().getName(),     // --- MUDANÇA AQUI ---
             request.getManager().getId(),
             request.getManager().getName(),
             request.getDescription(),

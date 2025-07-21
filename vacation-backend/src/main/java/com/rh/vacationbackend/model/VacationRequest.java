@@ -10,7 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID; // Importe o UUID
+import java.util.UUID;
 
 @Entity
 @Table(name = "vacation_requests")
@@ -23,15 +23,16 @@ public class VacationRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "request_id")
-    private UUID id; 
+    private UUID id;
 
+    // --- MUDANÇA AQUI ---
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user; 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id", nullable = false)
-    private Employee manager;
+    private Users manager;
 
     @Column(columnDefinition = "TEXT")
     private String description;

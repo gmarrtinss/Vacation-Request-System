@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public record VacationRequestResponseDTO(
     UUID requestId,
-    UUID employeeId,
-    String employeeName,
+    UUID userId, // --- MUDANÇA AQUI ---
+    String userName, // --- MUDANÇA AQUI ---
     UUID managerId,
     String managerName,
     String description,
