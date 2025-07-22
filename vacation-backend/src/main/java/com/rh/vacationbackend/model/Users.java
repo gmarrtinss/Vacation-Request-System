@@ -1,10 +1,14 @@
 package com.rh.vacationbackend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.AssertTrue; // Importe esta anotação
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -14,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Users {
+public class Users implements UserDetails { // 1. Implemente a interface UserDetails
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -53,12 +57,33 @@ public class Users {
     private Users manager;
 
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
 
-    @AssertTrue(message = "A senha é obrigatória para a role 'GESTOR'")
-    private boolean isPasswordValid() {
-        if (this.role != UsersRole.MANAGER) {
-            return true;
-        }
-        return this.password != null && !this.password.isBlank();
+    @Override
+    public String getUsername() {
+        return cpf;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

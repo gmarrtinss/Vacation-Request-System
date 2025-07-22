@@ -1,13 +1,12 @@
-package com.rh.vacationbackend; // pacote da sua classe principal (ajuste se diferente)
+package com.rh.vacationbackend;
 
+import com.rh.vacationbackend.config.JwtProperties; // 1. Importe a nova classe
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.context.properties.EnableConfigurationProperties; // 2. Importe a anotação
 
 @SpringBootApplication
-@EntityScan("com.rh.vacationbackend.model") // pacote das suas entidades
-@EnableJpaRepositories("com.rh.vacationbackend.repository") // pacote dos seus repositórios
+@EnableConfigurationProperties(JwtProperties.class) // 3. Ative a sua classe de propriedades aqui
 public class VacationBackendApplication {
 
     public static void main(String[] args) {

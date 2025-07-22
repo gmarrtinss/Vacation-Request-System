@@ -69,14 +69,13 @@ public class VacationRequestController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Endpoint para um utilizador atualizar PARCIALMENTE (apenas as datas) de uma de suas solicitações.
-     */
+
+    
     @PatchMapping("/{requestId}/dates")
     public ResponseEntity<VacationRequestResponseDTO> updateVacationDates(
             @PathVariable UUID requestId,
             @RequestBody VacationDateUpdateDTO dateDto,
-            @RequestParam UUID userId) {
+            @RequestParam UUID userId) {// tirar o userId, já tô usando o requestId não tem sentido eu usar mais uma informação
 
         VacationRequest updatedRequest = vacationRequestService.updateDates(requestId, userId, dateDto);
         
@@ -88,8 +87,8 @@ public class VacationRequestController {
     private VacationRequestResponseDTO convertToResponseDto(VacationRequest request) {
         return new VacationRequestResponseDTO(
             request.getId(),
-            request.getUser().getId(),       // --- MUDANÇA AQUI ---
-            request.getUser().getName(),     // --- MUDANÇA AQUI ---
+            request.getUser().getId(),      
+            request.getUser().getName(),    
             request.getManager().getId(),
             request.getManager().getName(),
             request.getDescription(),
@@ -100,6 +99,13 @@ public class VacationRequestController {
         );
     }
 }
+
+
+/* 
+ * Abaixo fica as alterações pra quando for usuário duplo(employee e manager)
+ * Só faz sentido approve e request quando se tem o employee pedindo férias
+ * Quando tiver solicitação de férias pelo employee, terá o approve ou reject do manager
+*/
 
 // @PutMapping("/{requestId}/approve")
 //     public ResponseEntity<VacationRequestResponseDTO> approveRequest(

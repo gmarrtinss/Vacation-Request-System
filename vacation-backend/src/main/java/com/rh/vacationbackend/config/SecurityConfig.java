@@ -23,10 +23,7 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // AQUI ESTÁ A MUDANÇA TEMPORÁRIA:
-                // Permite acesso a TUDO que começa com /api/ sem autenticação.
                 .requestMatchers("/api/**").permitAll()
-                // A regra abaixo será ignorada por enquanto, mas a manteremos para o futuro.
                 .anyRequest().authenticated()
             );
         return http.build();
