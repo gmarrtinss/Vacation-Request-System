@@ -5,7 +5,7 @@ on:
     branches:
       - develop
       - main
-      - 14-featuresdevopscicd-create-unit-test-workflow-for-github-actions
+      - 14-featuredevopscicd-create-unit-test-workflow-for-github-actions
   pull_request:
     branches:
       - develop
