@@ -25,7 +25,6 @@ public class VacationRequest {
     @Column(name = "request_id")
     private UUID id;
 
-    // --- MUDANÇA AQUI ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user; 
