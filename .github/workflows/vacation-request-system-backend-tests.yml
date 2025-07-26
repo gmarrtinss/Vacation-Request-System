@@ -67,7 +67,7 @@ jobs:
             echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
 
       - name: Upload JaCoCo coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: vacation-backend/target/site/jacoco/
