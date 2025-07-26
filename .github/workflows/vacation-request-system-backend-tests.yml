@@ -1,0 +1,73 @@
+name: Run Vacation Backend Unit Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - 14-featuresdevopscicd-create-unit-test-workflow-for-github-actions
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  test:
+    name: Spring Boot Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: vacationDB
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: mypassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vacationDB
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      JWT_SECRET: your-jwt-secret-for-testing
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        working-directory: ./vacation-backend
+        run: mvn -B package --file pom.xml
+
+      - name: Run tests with Junit, mockito and JaCoCo
+        working-directory: ./vacation-backend
+        run: mvn test
+
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+            jacoco-csv-file: vacation-backend/target/site/jacoco/jacoco.csv
+
+      - name: Log coverage percentage
+        run: |
+            echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
+            echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
+
+      - name: Upload JaCoCo coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: jacoco-report
+          path: vacation-backend/target/site/jacoco/
