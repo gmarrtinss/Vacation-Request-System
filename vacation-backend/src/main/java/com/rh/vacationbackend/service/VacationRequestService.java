@@ -1,5 +1,8 @@
 package com.rh.vacationbackend.service;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.rh.vacationbackend.dto.PublicVacationStatusDTO;
 import com.rh.vacationbackend.dto.VacationDateUpdateDTO;
 import com.rh.vacationbackend.dto.VacationRequestCreateDTO;
@@ -9,9 +12,6 @@ import com.rh.vacationbackend.model.VacationRequest;
 import com.rh.vacationbackend.model.VacationRequestStatus;
 import com.rh.vacationbackend.repository.UsersRepository;
 import com.rh.vacationbackend.repository.VacationRequestRepository;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -97,7 +97,7 @@ public class VacationRequestService {
         if (!request.getManager().getId().equals(manager.getId())) {
             throw new SecurityException("Access denied. You are not the manager responsible for this request.");
         }
-        
+
         if (request.getStatus() != VacationRequestStatus.PENDING) {
             throw new IllegalStateException("Only requests with PENDING status can be canceled.");
         }
@@ -109,11 +109,11 @@ public class VacationRequestService {
     public List<VacationRequest> findAllRequestsByManager(UUID managerId) {
         Users manager = usersRepository.findById(managerId)
                 .orElseThrow(() -> new RuntimeException("Manager not found."));
-        
+
         if (manager.getRole() != UsersRole.MANAGER) {
             throw new SecurityException("Only managers can view team requests.");
         }
-        
+
         return vacationRequestRepository.findByManager(manager);
     }
 
@@ -121,11 +121,11 @@ public class VacationRequestService {
     public List<VacationRequest> findRequestsByUserForManager(UUID userId, UUID managerId) {
         Users manager = usersRepository.findById(managerId)
                 .orElseThrow(() -> new RuntimeException("Manager not found."));
-        
+
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
-        if (user.getManager() == null || !user.getManager().getId().equals(manager.getId())) {
+        if (user.getManager() == null || !(user.getManager()).getId().equals(manager.getId())) {
             throw new SecurityException("Access denied. You are not the manager of this User.");
         }
 
@@ -136,7 +136,7 @@ public class VacationRequestService {
     public List<VacationRequest> findRequestsByUserCpf(String cpf) {
         Users user = usersRepository.findByCpf(cpf)
                 .orElseThrow(() -> new RuntimeException("User not found with CPF: " + cpf));
-        
+
         return vacationRequestRepository.findByUser(user);
     }
 
@@ -158,10 +158,6 @@ public class VacationRequestService {
                 .toList();
     }
 
-     /**
-     * UPDATE (Partial): Updates only the start and end dates of a vacation request.
-     * Business logic ensures the request is still PENDING and the new dates are valid.
-     */
     @Transactional
     public VacationRequest updateDates(UUID requestId, UUID userId, VacationDateUpdateDTO dateDto) {
         VacationRequest request = findById(requestId);
@@ -187,43 +183,47 @@ public class VacationRequestService {
         return vacationRequestRepository.save(request);
     }
 
-    // Métodos approve e reject comentados, conforme o seu ficheiro original.
-    // Você pode descomentá-los quando a lógica de autenticação do gestor estiver pronta.
-    /*
-    @Transactional
-    public VacationRequest approve(UUID requestId, UUID managerId) {
-        VacationRequest request = findById(requestId);
-        Users manager = usersRepository.findById(managerId)
-                .orElseThrow(() -> new RuntimeException("Manager not found."));
+    /**
+     * Approves a vacation request. Only the responsible manager can perform this action.
+     */
+    // @Transactional
+    // public VacationRequest approve(UUID requestId, UUID managerId) {
+    //     VacationRequest request = findById(requestId);
+    //     Users manager = usersRepository.findById(managerId)
+    //             .orElseThrow(() -> new RuntimeException("Manager not found."));
 
-        if (!request.getManager().getId().equals(manager.getId())) {
-            throw new SecurityException("Access denied. You are not the manager responsible for this request.");
-        }
+    //     if (!request.getManager().getId().equals(manager.getId())) {
+    //         throw new SecurityException("Access denied. You are not the manager responsible for this request.");
+    //     }
 
-        if (request.getStatus() != VacationRequestStatus.PENDING) {
-            throw new IllegalStateException("Only requests with PENDING status can be approved.");
-        }
+    //     if (request.getStatus() != VacationRequestStatus.PENDING) {
+    //         throw new IllegalStateException("Only requests with PENDING status can be approved.");
+    //     }
 
-        request.setStatus(VacationRequestStatus.APPROVED);
-        return vacationRequestRepository.save(request);
-    }
+    //     request.setStatus(VacationRequestStatus.APPROVED);
+    //     return vacationRequestRepository.save(request);
+    // }
 
-    @Transactional
-    public VacationRequest reject(UUID requestId, UUID managerId) {
-        VacationRequest request = findById(requestId);
-        Users manager = usersRepository.findById(managerId)
-                .orElseThrow(() -> new RuntimeException("Manager not found."));
+    // /**
+    //  * Rejects a vacation request. Only the responsible manager can perform this action.
+    //  */
+    // @Transactional
+    // public VacationRequest reject(UUID requestId, UUID managerId) {
+    //     VacationRequest request = findById(requestId);
+    //     Users manager = usersRepository.findById(managerId)
+    //             .orElseThrow(() -> new RuntimeException("Manager not found."));
 
-        if (!request.getManager().getId().equals(manager.getId())) {
-            throw new SecurityException("Access denied. You are not the manager responsible for this request.");
-        }
-        
-        if (request.getStatus() != VacationRequestStatus.PENDING) {
-            throw new IllegalStateException("Only requests with PENDING status can be declined.");
-        }
+    //     if (!request.getManager().getId().equals(manager.getId())) {
+    //         throw new SecurityException("Access denied. You are not the manager responsible for this request.");
+    //     }
 
-        request.setStatus(VacationRequestStatus.DECLINED);
-        return vacationRequestRepository.save(request);
-    }
-    */
+    //     if (request.getStatus() != VacationRequestStatus.PENDING) {
+    //         throw new IllegalStateException("Only requests with PENDING status can be declined.");
+    //     }
+
+    //     // Supondo que você tenha um status DECLINED no seu enum VacationRequestStatus
+    //     // Se o nome for REJECTED, ajuste aqui.
+    //     request.setStatus(VacationRequestStatus.DECLINED);
+    //     return vacationRequestRepository.save(request);
+    // }
 }

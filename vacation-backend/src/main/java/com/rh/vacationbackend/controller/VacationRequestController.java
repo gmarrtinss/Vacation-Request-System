@@ -1,19 +1,15 @@
 package com.rh.vacationbackend.controller;
 
+import com.rh.vacationbackend.dto.VacationDateUpdateDTO;
+import com.rh.vacationbackend.dto.VacationRequestCreateDTO;
+import com.rh.vacationbackend.dto.VacationRequestResponseDTO;
 import com.rh.vacationbackend.model.VacationRequest;
 import com.rh.vacationbackend.service.VacationRequestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import com.rh.vacationbackend.dto.VacationDateUpdateDTO;
-// DTOs que vamos criar a seguir
-import com.rh.vacationbackend.dto.VacationRequestCreateDTO;
-import com.rh.vacationbackend.dto.VacationRequestResponseDTO;
 
 @RestController
 @RequestMapping("/api/vacations")
@@ -26,101 +22,59 @@ public class VacationRequestController {
     }
 
     @PostMapping
-    public ResponseEntity<VacationRequestResponseDTO> createRequest(@RequestBody VacationRequestCreateDTO createDTO) {
-        VacationRequest createdRequest = vacationRequestService.create(createDTO, createDTO.userId()); // --- MUDANÇA AQUI ---
+    public ResponseEntity<VacationRequestResponseDTO> createRequest(@RequestBody VacationRequestCreateDTO createDTO, @RequestHeader("X-User-Id") UUID userId) {
+        VacationRequest createdRequest = vacationRequestService.create(createDTO, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponseDto(createdRequest));
     }
-
-    @GetMapping
-    public ResponseEntity<List<VacationRequestResponseDTO>> getAll() {
-        List<VacationRequest> list = vacationRequestService.findAll();
-        List<VacationRequestResponseDTO> dtoList = list.stream().map(this::convertToResponseDto).collect(Collectors.toList());
-        return ResponseEntity.ok(dtoList);
-    }
-    
 
     @GetMapping("/{id}")
     public ResponseEntity<VacationRequestResponseDTO> getRequestById(@PathVariable UUID id) {
         VacationRequest request = vacationRequestService.findById(id);
-        
-        VacationRequestResponseDTO responseDTO = convertToResponseDto(request);
-
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(convertToResponseDto(request));
     }
 
-    @GetMapping("/employee/by-cpf/{cpf}")
-    public ResponseEntity<List<VacationRequestResponseDTO>> getRequestsByUserCpf(@PathVariable String cpf) {
-        List<VacationRequest> requests = vacationRequestService.findRequestsByUserCpf(cpf);
-
-        List<VacationRequestResponseDTO> responseDTOs = requests.stream()
-                .map(this::convertToResponseDto)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(responseDTOs);
-    }
-
-    @DeleteMapping("/{requestId}/managerId")
-    public ResponseEntity<Void> cancelRequest(
-            @PathVariable UUID requestId,
-            @RequestParam UUID managerId) {
-        
-        vacationRequestService.cancel(requestId, managerId);
-        
-        return ResponseEntity.noContent().build();
-    }
-
-
-    
-    @PatchMapping("/{requestId}/dates")
-    public ResponseEntity<VacationRequestResponseDTO> updateVacationDates(
-            @PathVariable UUID requestId,
-            @RequestBody VacationDateUpdateDTO dateDto,
-            @RequestParam UUID userId) {// tirar o userId, já tô usando o requestId não tem sentido eu usar mais uma informação
-
-        VacationRequest updatedRequest = vacationRequestService.updateDates(requestId, userId, dateDto);
-        
+    @PatchMapping("/{id}/dates")
+    public ResponseEntity<VacationRequestResponseDTO> updateVacationDates(@PathVariable UUID id, @RequestHeader("X-User-Id") UUID userId, @RequestBody VacationDateUpdateDTO dateDTO) {
+        VacationRequest updatedRequest = vacationRequestService.updateDates(id, userId, dateDTO);
         return ResponseEntity.ok(convertToResponseDto(updatedRequest));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelRequest(@PathVariable UUID id, @RequestHeader("X-Manager-Id") UUID managerId) {
+        vacationRequestService.cancel(id, managerId);
+        return ResponseEntity.noContent().build();
     }
 
 
 
     private VacationRequestResponseDTO convertToResponseDto(VacationRequest request) {
+        if (request == null) {
+            return null;
+        }
+        UUID managerId = (request.getManager() != null) ? request.getManager().getId() : null;
+        UUID userId = (request.getUser() != null) ? request.getUser().getId() : null;
+
         return new VacationRequestResponseDTO(
-            request.getId(),
-            request.getUser().getId(),      
-            request.getUser().getName(),    
-            request.getManager().getId(),
-            request.getManager().getName(),
-            request.getDescription(),
-            request.getStartDate(),
-            request.getEndDate(),
-            request.getStatus(),
-            request.getCreatedAt()
+                request.getId(),
+                userId,
+                managerId,
+                request.getDescription(),
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getStatus(),
+                request.getCreatedAt()
         );
     }
 }
 
+    // @PatchMapping("/{id}/approve")
+    // public ResponseEntity<VacationRequestResponseDTO> approveRequest(@PathVariable UUID id, @RequestHeader("X-Manager-Id") UUID managerId) {
+    //     VacationRequest approvedRequest = vacationRequestService.approve(id, managerId);
+    //     return ResponseEntity.ok(convertToResponseDto(approvedRequest));
+    // }
 
-/* 
- * Abaixo fica as alterações pra quando for usuário duplo(employee e manager)
- * Só faz sentido approve e request quando se tem o employee pedindo férias
- * Quando tiver solicitação de férias pelo employee, terá o approve ou reject do manager
-*/
-
-// @PutMapping("/{requestId}/approve")
-//     public ResponseEntity<VacationRequestResponseDTO> approveRequest(
-//             @PathVariable UUID requestId,
-//             @RequestParam UUID managerId) {
-        
-//         VacationRequest approvedRequest = vacationRequestService.approve(requestId, managerId);
-//         return ResponseEntity.ok(convertToResponseDto(approvedRequest));
-//     }
-
-//     @PutMapping("/{requestId}/reject")
-//     public ResponseEntity<VacationRequestResponseDTO> rejectRequest(
-//             @PathVariable UUID requestId,
-//             @RequestParam UUID managerId) {
-
-//         VacationRequest rejectedRequest = vacationRequestService.reject(requestId, managerId);
-//         return ResponseEntity.ok(convertToResponseDto(rejectedRequest));
-//     }
+    // @PatchMapping("/{id}/reject")
+    // public ResponseEntity<VacationRequestResponseDTO> rejectRequest(@PathVariable UUID id, @RequestHeader("X-Manager-Id") UUID managerId) {
+    //     VacationRequest rejectedRequest = vacationRequestService.reject(id, managerId);
+    //     return ResponseEntity.ok(convertToResponseDto(rejectedRequest));
+    // }

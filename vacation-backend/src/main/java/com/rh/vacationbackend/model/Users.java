@@ -18,7 +18,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Users implements UserDetails { // 1. Implemente a interface UserDetails
+@Builder
+public class Users implements UserDetails { 
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

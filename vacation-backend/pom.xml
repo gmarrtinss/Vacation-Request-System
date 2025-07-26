@@ -72,7 +72,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- DevTools (hot reload) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -80,7 +79,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Testes -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -118,7 +116,6 @@
             <version>0.12.5</version>
             <scope>runtime</scope>
         </dependency>
-        
     </dependencies>
 
 
@@ -139,7 +136,62 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/rh/vacationbackend/VacationBackendApplication.class</exclude>
+                                <exclude>com/rh/vacationbackend/config/*</exclude>
+                                <exclude>com/rh/vacationbackend/dto/*</exclude>
+                                <exclude>com/rh/vacationbackend/model/*</exclude>
+                                <exclude>com/rh/vacationbackend/exception/*</exclude>
+                                <exclude>com/rh/vacationbackend/service/PositionService.class</exclude>
+                                <exclude>com/rh/vacationbackend/service/SectorService.class</exclude>
+                                <exclude>com/rh/vacationbackend/service/TokenBlacklistService.class</exclude>
+                                <exclude>com/rh/vacationbackend/service/TokenService.class</exclude>
+                                <exclude>com/rh/vacationbackend/controller/PositionController.class</exclude>
+                                <exclude>com/rh/vacationbackend/controller/SectorController.class</exclude>
 
+                                <exclude></exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                     <execution>
+                        <id>jacoco-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>PACKAGE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.50</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Plugin Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>

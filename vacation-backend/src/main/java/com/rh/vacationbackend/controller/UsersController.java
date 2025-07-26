@@ -5,8 +5,12 @@ import com.rh.vacationbackend.dto.UsersResponseDTO;
 import com.rh.vacationbackend.dto.UsersUpdateDTO;
 import com.rh.vacationbackend.model.Users;
 import com.rh.vacationbackend.service.UsersService;
+
+import jakarta.validation.constraints.Pattern;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
+@Validated
 public class UsersController {
 
     private final UsersService usersService;
@@ -56,12 +61,11 @@ public class UsersController {
 
 
 
-    // Dentro da classe UsersController
 
     @GetMapping("/by-cpf/{cpf}")
-    public ResponseEntity<UsersResponseDTO> getByCpf(@PathVariable String cpf) {
-        // O service precisa de um método 'findByCpf' que retorne a entidade
-        Users user = usersService.findByCpf(cpf); // Supondo que você crie este método no service
+    public ResponseEntity<UsersResponseDTO> getByCpf( @PathVariable @Pattern(regexp = "[0-9]{11}", message = "CPF must contain exactly 11 digits.") String cpf) {
+        
+        Users user = usersService.findByCpf(cpf); 
         return ResponseEntity.ok(convertToDto(user));
     }
 

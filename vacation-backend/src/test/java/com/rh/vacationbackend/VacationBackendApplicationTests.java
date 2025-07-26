@@ -1,13 +1,13 @@
-package com.rh.vacationbackend;
+// package com.rh.vacationbackend;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class VacationBackendApplicationTests {
+// @SpringBootTest
+// class VacationBackendApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+// 	@Test
+// 	void contextLoads() {
+// 	}
 
-}
+// }

@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +43,14 @@ public class UsersService {
             throw new IllegalArgumentException("Email already exists in the system.");
         }
 
+        if (dto.admissionDate().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Admission date cannot be in the future.");
+        }
+
+        if (dto.role() == UsersRole.EMPLOYEE && dto.managerId() == null) {
+            throw new IllegalArgumentException("Manager ID is required for EMPLOYEE role.");
+        }
+
         Users newUser = new Users();
         newUser.setCpf(dto.cpf());
         newUser.setName(dto.name());
@@ -49,32 +58,34 @@ public class UsersService {
         newUser.setRole(dto.role());
         newUser.setAdmissionDate(dto.admissionDate());
 
+        Sector sector = sectorRepository.findById(dto.sectorId())
+                .orElseThrow(() -> new EntityNotFoundException("Sector not found with ID: " + dto.sectorId()));
+        newUser.setSector(sector);
+        
+        Position position = positionRepository.findById(dto.positionId())
+                .orElseThrow(() -> new EntityNotFoundException("Position not found with ID: " + dto.positionId()));
+        newUser.setPosition(position);
+        
         if (dto.role() == UsersRole.MANAGER) {
             if (dto.password() == null || dto.password().isBlank()) {
                 throw new IllegalArgumentException("Password is required for managers.");
             }
             newUser.setPassword(passwordEncoder.encode(dto.password()));
-        }
-
-        if (dto.sectorId() != null) {
-            Sector sector = sectorRepository.findById(dto.sectorId())
-                    .orElseThrow(() -> new EntityNotFoundException("Sector not found with ID: " + dto.sectorId()));
-            newUser.setSector(sector);
-        }
-
-        if (dto.positionId() != null) {
-            Position position = positionRepository.findById(dto.positionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Position not found with ID: " + dto.positionId()));
-            newUser.setPosition(position);
-        }
-
-        if (dto.managerId() != null) {
+        } else { 
+            if (dto.password() != null && !dto.password().isBlank()) {
+                throw new IllegalArgumentException("Password field should not be provided for EMPLOYEE role.");
+            }
             Users manager = findById(dto.managerId());
+            
+            if (manager.getSector() == null || !manager.getSector().getId().equals(dto.sectorId())) {
+                throw new IllegalStateException("Manager must be from the same sector as the employee.");
+            }
             newUser.setManager(manager);
         }
 
         return usersRepository.save(newUser);
     }
+
 
     @Transactional(readOnly = true)
     public List<Users> findAll() {
@@ -85,6 +96,16 @@ public class UsersService {
     public Users findById(UUID id) {
         return usersRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Users findByIdForManager(UUID userIdToFind, Users authenticatedManager) {
+        Users user = findById(userIdToFind); 
+
+        if (user.getManager() == null || !user.getManager().getId().equals(authenticatedManager.getId())) {
+            throw new SecurityException("Access denied. You are not the manager of this user.");
+        }
+        return user;
     }
 
     @Transactional(readOnly = true)
@@ -123,23 +144,10 @@ public class UsersService {
      * DELETE: Remove um funcionário do banco de dados.
      */
     @Transactional
+    
     public void delete(UUID id) {
         findById(id);
         usersRepository.deleteById(id);
-    }
-
-    // --- MÉTODOS DE NEGÓCIO ESPECÍFICOS ---
-
-    /**
-     * READ (Específico): Lista todos os funcionários gerenciados por um gestor.
-     * Este método seria chamado por um endpoint protegido, acessível apenas por gestores.
-     */
-    @Transactional(readOnly = true)
-    public List<Users> findEmployeesByManager(Users manager) {
-        if (manager.getRole() != UsersRole.MANAGER) {
-            throw new SecurityException("Only managers can acess their employees.");
-        }
-        return usersRepository.findByManager(manager);
     }
 
     public Users findByCpf(String cpf) {
